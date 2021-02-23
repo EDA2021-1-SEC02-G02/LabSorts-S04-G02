@@ -1,4 +1,8 @@
 #ISIS1225 - Estructura de un proyecto
+--------------------------------------------------------------------------------
+est 1 - Ehimar Andres Vargas Malaver, 202014902, e.vargasm@uniandes.edu.co
+est 2 - Briggitte Juliana Arcos Gomez, 202014103, b.arcos@uniandes.edu.co
+--------------------------------------------------------------------------------
 
 Este proyecto busca mostrar una posible forma de organizar el código que se va a desarrollar en los proyectos del curso.
 
