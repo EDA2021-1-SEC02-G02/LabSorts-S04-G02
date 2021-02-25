@@ -26,182 +26,148 @@
 
 
 import config as cf
-import time
 from DISClib.ADT import list as lt
 from DISClib.Algorithms.Sorting import shellsort as sa
 assert cf
 
 """
-Se define la estructura de un catálogo de libros.
-El catálogo tendrá tres listas, una para libros, otra para autores
-y otra para géneros
+Se define la estructura de un catálogo de videos. El catálogo tendrá dos listas, una para los videos, otra para las categorias de
+los mismos.
 """
 
 # Construccion de modelos
 
 
-def newCatalog():
+def newCatalogARRAY():
     """
-    Inicializa el catálogo de libros. Crea una lista vacia para guardar
-    todos los libros, adicionalmente, crea una lista vacia para los autores,
-    una lista vacia para los generos y una lista vacia para la asociación
-    generos y libros. Retorna el catalogo inicializado.
+    inicializa el catalogo de video y su informacion
     """
-    catalog = {'books': None,
-               'authors': None,
-               'tags': None,
-               'book_tags': None}
+    catalog = {'videos': None,
+               'categorias': None,
+               'paises':None,
+               'tag':None}
+    
+    catalog['videos'] = lt.newList('ARRAY_LSIT', cmpfunction = funcompare) 
+    catalog['categorias'] = lt.newList('ARRAY_LIST', 
+                                       cmpfunction = comparecategory)
+    catalog['paises'] = lt.newList('ARRAY_LIST', 
+                                   cmpfunction = comparecountry)
+    catalog['tag'] =lt.newList()
 
-    catalog['books'] = lt.newList()
-    catalog['authors'] = lt.newList('ARRAY_LIST',
-                                    cmpfunction=compareauthors)
-    catalog['tags'] = lt.newList('ARRAY_LIST',
-                                 cmpfunction=comparetagnames)
-    catalog['book_tags'] = lt.newList('ARRAY_LIST')
+    return catalog
+
+def newCatalogLINKED():
+    """
+    inicializa el catalogo de video y su informacion
+    """
+    catalog = {'videos': None,
+               'categorias': None,
+               'paises':None,
+               'tag':None}
+    
+    catalog['videos'] = lt.newList()
+    catalog['categorias'] = lt.newList('SINGLE_LINKED', 
+                                       cmpfunction = comparecategory)
+    catalog['paises'] = lt.newList('SINGLE_LINKED', 
+                                   cmpfunction = comparecountry)
+    catalog['tag'] =lt.newList()
 
     return catalog
 
 
 # Funciones para agregar informacion al catalogo
 
-def addBook(catalog, book):
-    # Se adiciona el libro a la lista de libros
-    lt.addLast(catalog['books'], book)
-    # Se obtienen los autores del libro
-    authors = book['authors'].split(",")
-    # Cada autor, se crea en la lista de libros del catalogo, y se
-    # crea un libro en la lista de dicho autor (apuntador al libro)
-    for author in authors:
-        addBookAuthor(catalog, author.strip(), book)
+def addvideo(catalog, video):
+    lt.addLast(catalog['videos'], video)
+    categorias = video['category_id'] 
+    categorias =str(categorias)
+    paises = video['country']
+    newcountry(catalog, paises.strip(), video)
+    newcategory(catalog, categorias.strip(), video)
 
 
-def addBookAuthor(catalog, authorname, book):
-    """
-    Adiciona un autor a lista de autores, la cual guarda referencias
-    a los libros de dicho autor
-    """
-    authors = catalog['authors']
-    posauthor = lt.isPresent(authors, authorname)
-    if posauthor > 0:
-        author = lt.getElement(authors, posauthor)
+def newcategory(catalog, categorynumber, video):
+    categorias= catalog['categorias']
+    poscategoria = lt.isPresent(categorias, categorynumber)
+    if poscategoria >0:
+        category = lt.getElement(categorias, poscategoria)
     else:
-        author = newAuthor(authorname)
-        lt.addLast(authors, author)
-    lt.addLast(author['books'], book)
-
-
-def addTag(catalog, tag):
-    """
-    Adiciona un tag a la lista de tags
-    """
-    t = newTag(tag['tag_name'], tag['tag_id'])
-    lt.addLast(catalog['tags'], t)
-
-
-def addBookTag(catalog, booktag):
-    """
-    Adiciona un tag a la lista de tags
-    """
-    t = newBookTag(booktag['tag_id'], booktag['goodreads_book_id'])
-    lt.addLast(catalog['book_tags'], t)
+        category = addnewcategory(categorynumber)
+        lt.addLast(categorias, category)
+    lt.addLast(category['videos'], video)
+    
+    
+def newcountry(catalog, countryname, video):
+    paises = catalog['paises']
+    pospaises = lt.isPresent(paises, countryname)
+    if pospaises > 0:
+        country = lt.getElement(paises, pospaises)
+    else:
+        country = addnewcountry(countryname)
+        lt.addLast(paises, country)
+    lt.addLast(country['videos'], video)
+      
 
 
 # Funciones para creacion de datos
 
-def newAuthor(name):
-    """
-    Crea una nueva estructura para modelar los libros de
-    un autor y su promedio de ratings
-    """
-    author = {'name': "", "books": None,  "average_rating": 0}
-    author['name'] = name
-    author['books'] = lt.newList('ARRAY_LIST')
-    return author
+def addnewcategory(categorynumber):
+    category = {'number_category': "", "videos": None}
+    category['number_category'] = categorynumber
+    category['videos'] = lt.newList('ARRAY_LIST')
+    return category
 
 
-def newTag(name, id):
-    """
-    Esta estructura almancena los tags utilizados para marcar libros.
-    """
-    tag = {'name': '', 'tag_id': ''}
-    tag['name'] = name
-    tag['tag_id'] = id
-    return tag
-
-
-def newBookTag(tag_id, book_id):
-    """
-    Esta estructura crea una relación entre un tag y
-    los libros que han sido marcados con dicho tag.
-    """
-    booktag = {'tag_id': tag_id, 'book_id': book_id}
-    return booktag
+def addnewcountry(countryname):
+    country = {'name_country': "", "videos": None}
+    country['name_country'] = countryname
+    country['videos'] = lt.newList('ARRAY_LIST')
+    return country
 
 
 # Funciones de consulta
 
-def getBooksByAuthor(catalog, authorname):
-    """
-    Retorna un autor con sus libros a partir del nombre del autor
-    """
-    posauthor = lt.isPresent(catalog['authors'], authorname)
-    if posauthor > 0:
-        author = lt.getElement(catalog['authors'], posauthor)
-        return author
-    return None
-
-
-def getBestBooks(catalog, number):
-    """
-    Retorna los mejores libros
-    """
-    books = catalog['books']
-    bestbooks = lt.newList()
-    for cont in range(1, number+1):
-        book = lt.getElement(books, cont)
-        lt.addLast(bestbooks, book)
-    return bestbooks
-
-
-def countBooksByTag(catalog, tag):
-    """
-    Retorna los libros que fueron etiquetados con el tag
-    """
-    tags = catalog['tags']
-    bookcount = 0
-    pos = lt.isPresent(tags, tag)
-    if pos > 0:
-        tag_element = lt.getElement(tags, pos)
-        if tag_element is not None:
-            for book_tag in lt.iterator(catalog['book_tags']):
-                if tag_element['tag_id'] == book_tag['tag_id']:
-                    bookcount += 1
-    return bookcount
-
-
 # Funciones utilizadas para comparar elementos dentro de una lista
 
-def compareauthors(authorname1, author):
-    if (authorname1.lower() in author['name'].lower()):
+def comparecategory(categorynumber1, category):
+    if (categorynumber1.lower() == category['number_category'].lower()):
         return 0
     return -1
 
 
-def compareratings(book1, book2):
-    return (float(book1['average_rating']) < float(book2['average_rating']))
+def comparecountry(countryname1, country):
+    if (countryname1.lower() == country['name_country'].lower()):
+        return 0
+    return -1
 
-
-def comparetagnames(name, tag):
-    return (name == tag['name'])
+def cmpVideosByViews(video1, video2):
+    """
+    Devuelve verdadero (True) si los 'views' de video1 son menores que los del video2
+    Args:
+    video1: informacion del primer video que incluye su valor 'views'
+    video2: informacion del segundo video que incluye su valor 'views'
+    """
+    if video1['views'] < video2['views']:
+        return True
+    else:
+        return False
+    
+def funcompare(video1,video2):
+    if video1['video_id'] > video2['video_id']:
+        return 1
+    if video1['video_id'] < video2['video_id']:
+        return -1
+    else:
+        return 0
 
 
 # Funciones de ordenamiento
-def sortBooks(catalog, size):
-    sub_list = lt.subList(catalog['books'], 0, size)
+def sortvideos(catalog, size):
+    sub_list = lt.subList(catalog['videos'], 0, size)
     sub_list = sub_list.copy()
     start_time = time.process_time()
-    sorted_list = sa.sort(sub_list, compareratings)
+    sorted_list = sa.sort(sub_list, cmpVideosByViews)
     stop_time = time.process_time()
     elapsed_time_mseg = (stop_time - start_time)*1000
     return elapsed_time_mseg, sorted_list
-
+     

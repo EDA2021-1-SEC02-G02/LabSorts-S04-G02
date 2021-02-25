@@ -29,91 +29,35 @@ import csv
 El controlador se encarga de mediar entre la vista y el modelo.
 """
 
-
 # Inicialización del Catálogo de libros
+def initCatalogARRAY():
+    """
+    llamada la funcion de Inicialización del catalogo
+    """
+    catalog = model.newCatalogARRAY()
+    return catalog
 
-def initCatalog():
-    """
-    Llama la funcion de inicializacion del catalogo del modelo.
-    """
-    catalog = model.newCatalog()
+def initCatalogLINKED():
+    catalog = model.newCatalogLINKED()
     return catalog
 
 
 # Funciones para la carga de datos
 
-
 def loadData(catalog):
     """
-    Carga los datos de los archivos y cargar los datos en la
-    estructura de datos
+    carga los datos de los archivos en la estructura de datos
     """
-    loadBooks(catalog)
-    loadTags(catalog)
-    loadBooksTags(catalog)
+    loadVideos(catalog)
 
-
-def loadBooks(catalog):
-    """
-    Carga los libros del archivo.  Por cada libro se toman sus autores y por
-    cada uno de ellos, se crea en la lista de autores, a dicho autor y una
-    referencia al libro que se esta procesando.
-    """
-    booksfile = cf.data_dir + 'GoodReads/books.csv'
-    input_file = csv.DictReader(open(booksfile, encoding='utf-8'))
-    for book in input_file:
-        model.addBook(catalog, book)
-
-
-def loadTags(catalog):
-    """
-    Carga todos los tags del archivo y los agrega a la lista de tags
-    """
-    tagsfile = cf.data_dir + 'GoodReads/tags.csv'
-    input_file = csv.DictReader(open(tagsfile, encoding='utf-8'))
-    for tag in input_file:
-        model.addTag(catalog, tag)
-
-
-def loadBooksTags(catalog):
-    """
-    Carga la información que asocia tags con libros.
-    """
-    booktagsfile = cf.data_dir + 'GoodReads/book_tags.csv'
-    input_file = csv.DictReader(open(booktagsfile, encoding='utf-8'))
-    for booktag in input_file:
-        model.addBookTag(catalog, booktag)
-
+def loadVideos(catalog):
+    videosfile = cf.data_dir + 'Kaggle/videos-small.csv'
+    input_file = csv.DictReader(open(videosfile, encoding='utf-8'))
+    for video in input_file:
+        model.addvideo(catalog, video) 
 
 # Funciones de ordenamiento
-
-def sortBooks(catalog, size):
-    """
-    Ordena los libros por average_rating
-    """
-    return model.sortBooks(catalog, size)
-
+def sortvideos(catalog, size):
+    return model.sortvideos(catalog, size)
 
 # Funciones de consulta sobre el catálogo
-
-def getBooksByAuthor(catalog, authorname):
-    """
-    Retrona los libros de un autor
-    """
-    author = model.getBooksByAuthor(catalog, authorname)
-    return author
-
-
-def getBestBooks(catalog, number):
-    """
-    Retorna los mejores libros
-    """
-    bestbooks = model.getBestBooks(catalog, number)
-    return bestbooks
-
-
-def countBooksByTag(catalog, tag):
-    """
-    Retorna los libros que fueron etiquetados con el tag
-    """
-    return model.countBooksByTag(catalog, tag)
